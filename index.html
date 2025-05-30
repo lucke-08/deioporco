@@ -108,67 +108,30 @@
   </head>
   <body>
     <script>
-      const cardsData = [
-        {
-          type: "fire",
-          baseImage:
-            "https://pokecardmaker.net/_next/image?url=%2Fassets%2Fcards%2FbaseSets%2FscarletAndViolet%2Fsupertypes%2Fpokemon%2Ftypes%2Ffire%2Fsubtypes%2Fbasic.png&w=1280&q=100",
-          overlays: [
-            {
-              src: "Screenshot 2025-05-15 234425.png",
-              x: 24,
-              y: 41,
-              width: 253,
-              index: -1
-            },
-          ],
-          texts: [
-            {
-              text: "Charizard EX",
-              x: 20,
-              y: 20,
-              fontSize: "18px",
-              color: "white",
-            },
-          ],
-        },
-        {
-          type: "grass",
-          baseImage:
-            "https://pokecardmaker.net/_next/image?url=%2Fassets%2Fcards%2FbaseSets%2FscarletAndViolet%2Fsupertypes%2Fpokemon%2Ftypes%2Fgrass%2Fsubtypes%2Fbasic.png&w=1280&q=100",
-          overlays: [],
-          texts: [
-            {
-              text: "Bulbasaur",
-              x: 30,
-              y: 25,
-              fontSize: "20px",
-              color: "lime",
-            },
-          ],
-        },
-      ];
-
       function isMobile() {
-        return /Android|iPhone|iPad|iPod|Windows Phone/i.test(
-          navigator.userAgent
-        );
+        return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
       }
 
-      function createCard(cardData, index) {
+      async function loadCards() {
+        const res = await fetch("cards.json");
+        const cardsData = await res.json();
+        cardsData.forEach(createCard);
+      }
+
+      function createCard(cardData) {
         const card = document.createElement("div");
         card.className = "card";
         card.style.setProperty("--mx", "-200px");
         card.style.setProperty("--my", "-200px");
 
         card.innerHTML = `
-        <div class="overlay light"></div>
-        <img src="${cardData.baseImage}" class="base" />
-        <div class="overlay bn"></div>
-        <div class="overlay rb"></div>
-      `;
+          <div class="overlay light"></div>
+          <img src="${cardData.baseImage}" class="base" />
+          <div class="overlay bn"></div>
+          <div class="overlay rb"></div>
+        `;
 
-        cardData.overlays.forEach((overlay) => {
+        cardData.overlays?.forEach((overlay) => {
           const img = document.createElement("img");
           img.className = "absolute-img";
           img.src = overlay.src;
@@ -179,7 +142,7 @@
           card.appendChild(img);
         });
 
-        cardData.texts.forEach((t) => {
+        cardData.texts?.forEach((t) => {
           const p = document.createElement("p");
           p.className = "text-overlay";
           p.textContent = t.text;
@@ -194,22 +157,34 @@
         document.body.appendChild(card);
 
         if (isMobile()) {
-          const gn = new GyroNorm();
-          gn.init()
-            .then(() => {
-              gn.start((data) => {
-                const { beta, gamma } = data.do;
-                const rotX = Math.max(Math.min(beta, 45), -45) / 4;
-                const rotY = Math.max(Math.min(gamma, 45), -45) / 4;
-                card.style.transform = `rotateX(${-rotX}deg) rotateY(${rotY}deg)`;
+          let baseBeta = null;
+          let baseGamma = null;
 
-                const centerX = 200 + rotY * 2.5;
-                const centerY = 200 + rotX * 2.5;
-                card.style.setProperty("--mx", `${centerX}px`);
-                card.style.setProperty("--my", `${centerY}px`);
-              });
-            })
-            .catch(console.warn);
+          const gn = new GyroNorm();
+          gn.init().then(() => {
+            gn.start((data) => {
+              const { beta, gamma } = data.do;
+
+              if (baseBeta === null || baseGamma === null) {
+                baseBeta = beta;
+                baseGamma = gamma;
+              }
+
+              const relBeta = beta - baseBeta;
+              const relGamma = gamma - baseGamma;
+
+              const clampedBeta = Math.max(Math.min(relBeta, 45), -45);
+              const clampedGamma = Math.max(Math.min(relGamma, 45), -45);
+
+              const cardRect = card.getBoundingClientRect();
+
+              const x = ((clampedGamma + 45) / 90) * cardRect.width;
+              const y = ((clampedBeta + 45) / 90) * cardRect.height;
+
+              card.style.setProperty("--mx", `${x}px`);
+              card.style.setProperty("--my", `${y}px`);
+            });
+          }).catch(console.warn);
         } else {
           card.addEventListener("mousemove", (e) => {
             const rect = card.getBoundingClientRect();
@@ -219,9 +194,7 @@
             const cy = rect.height / 2;
             const dx = (x - cx) / cx;
             const dy = (y - cy) / cy;
-            card.style.transform = `rotateX(${dy * 10}deg) rotateY(${
-              -dx * 10
-            }deg)`;
+            card.style.transform = `rotateX(${dy * 10}deg) rotateY(${-dx * 20}deg)`;
             card.style.setProperty("--mx", `${x}px`);
             card.style.setProperty("--my", `${y}px`);
           });
@@ -234,7 +207,7 @@
         }
       }
 
-      cardsData.forEach(createCard);
+      loadCards();
     </script>
   </body>
 </html>
