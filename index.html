@@ -3,23 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Card 3D con Filtri e Player</title>
+    <title>Card 3D con Filtri</title>
     <style>
       body {
         margin: 0;
         height: 100vh;
+        background: #000;
         display: flex;
+        flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-        background: url("sfondo.jpg") center/cover no-repeat;
         perspective: 1000px;
-        overflow: hidden;
+        overflow-y: auto;
+        gap: 20px;
+        padding: 20px;
       }
 
       .card {
         position: relative;
-        width: 400px;
-        height: 400px;
+        width: 300px;
+        aspect-ratio: 154 / 215;
         border-radius: 16px;
         overflow: hidden;
         transform-style: preserve-3d;
@@ -33,13 +36,18 @@
         object-fit: cover;
       }
 
-      .overlay {
+      .overlay,
+      .absolute-img,
+      .text-overlay {
         position: absolute;
+        pointer-events: none;
+      }
+
+      .overlay {
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        pointer-events: none;
         z-index: 2;
         mask-image: radial-gradient(
           circle 150px at var(--mx) var(--my),
@@ -84,73 +92,149 @@
         );
         z-index: 3;
         opacity: 0.6;
-        pointer-events: none;
+      }
+
+      .absolute-img {
+        z-index: 4;
+      }
+
+      .text-overlay {
+        z-index: 5;
+        font-family: sans-serif;
+        font-weight: bold;
       }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/gyronorm@2.0.6/dist/gyronorm.complete.min.js"></script>
   </head>
   <body>
-    <div class="card" id="card">
-      <div class="overlay light"></div>
-      <img src="Screenshot 2025-05-15 234425.png" alt="Card" class="base" />
-      <div class="overlay bn"></div>
-      <div class="overlay rb"></div>
-    </div>
-
     <script>
-      const card = document.getElementById("card");
-      card.style.setProperty("--mx", "-200px");
-      card.style.setProperty("--my", "-200px");
+      const cardsData = [
+        {
+          type: "fire",
+          baseImage:
+            "https://pokecardmaker.net/_next/image?url=%2Fassets%2Fcards%2FbaseSets%2FscarletAndViolet%2Fsupertypes%2Fpokemon%2Ftypes%2Ffire%2Fsubtypes%2Fbasic.png&w=1280&q=100",
+          overlays: [
+            {
+              src: "Screenshot 2025-05-15 234425.png",
+              x: 24,
+              y: 41,
+              width: 253,
+              index: -1
+            },
+          ],
+          texts: [
+            {
+              text: "Charizard EX",
+              x: 20,
+              y: 20,
+              fontSize: "18px",
+              color: "white",
+            },
+          ],
+        },
+        {
+          type: "grass",
+          baseImage:
+            "https://pokecardmaker.net/_next/image?url=%2Fassets%2Fcards%2FbaseSets%2FscarletAndViolet%2Fsupertypes%2Fpokemon%2Ftypes%2Fgrass%2Fsubtypes%2Fbasic.png&w=1280&q=100",
+          overlays: [],
+          texts: [
+            {
+              text: "Bulbasaur",
+              x: 30,
+              y: 25,
+              fontSize: "20px",
+              color: "lime",
+            },
+          ],
+        },
+      ];
 
       function isMobile() {
-        return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+        return /Android|iPhone|iPad|iPod|Windows Phone/i.test(
+          navigator.userAgent
+        );
       }
 
-      if (isMobile()) {
-        const gn = new GyroNorm();
-        gn.init().then(() => {
-          gn.start((data) => {
-            const { beta, gamma } = data.do;
+      function createCard(cardData, index) {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.setProperty("--mx", "-200px");
+        card.style.setProperty("--my", "-200px");
 
-            // ROTAZIONE: gamma (Y) ➜ rotY, beta (X) ➜ rotX
-            const rotX = Math.max(Math.min(beta, 45), -45) / 4;
-            const rotY = Math.max(Math.min(gamma, 45), -45) / 4;
-            card.style.transform = `rotateX(${-rotX}deg) rotateY(${rotY}deg)`;
+        card.innerHTML = `
+        <div class="overlay light"></div>
+        <img src="${cardData.baseImage}" class="base" />
+        <div class="overlay bn"></div>
+        <div class="overlay rb"></div>
+      `;
 
-            // MASCHERA: posizione centrata su rotazione
-            const centerX = 200 + rotY * 2.5;
-            const centerY = 200 + rotX * 2.5;
-            card.style.setProperty("--mx", `${centerX}px`);
-            card.style.setProperty("--my", `${centerY}px`);
+        cardData.overlays.forEach((overlay) => {
+          const img = document.createElement("img");
+          img.className = "absolute-img";
+          img.src = overlay.src;
+          img.style.left = `${overlay.x}px`;
+          img.style.top = `${overlay.y}px`;
+          img.style.width = `${overlay.width}px`;
+          img.style.zIndex = `${overlay.index}`;
+          card.appendChild(img);
+        });
+
+        cardData.texts.forEach((t) => {
+          const p = document.createElement("p");
+          p.className = "text-overlay";
+          p.textContent = t.text;
+          p.style.left = `${t.x}px`;
+          p.style.top = `${t.y}px`;
+          p.style.fontSize = t.fontSize;
+          p.style.color = t.color;
+          p.style.position = "absolute";
+          card.appendChild(p);
+        });
+
+        document.body.appendChild(card);
+
+        if (isMobile()) {
+          const gn = new GyroNorm();
+          gn.init()
+            .then(() => {
+              gn.start((data) => {
+                const { beta, gamma } = data.do;
+                const rotX = Math.max(Math.min(beta, 45), -45) / 4;
+                const rotY = Math.max(Math.min(gamma, 45), -45) / 4;
+                card.style.transform = `rotateX(${-rotX}deg) rotateY(${rotY}deg)`;
+
+                const centerX = 200 + rotY * 2.5;
+                const centerY = 200 + rotX * 2.5;
+                card.style.setProperty("--mx", `${centerX}px`);
+                card.style.setProperty("--my", `${centerY}px`);
+              });
+            })
+            .catch(console.warn);
+        } else {
+          card.addEventListener("mousemove", (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const cx = rect.width / 2;
+            const cy = rect.height / 2;
+            const dx = (x - cx) / cx;
+            const dy = (y - cy) / cy;
+            card.style.transform = `rotateX(${dy * 10}deg) rotateY(${
+              -dx * 10
+            }deg)`;
+            card.style.setProperty("--mx", `${x}px`);
+            card.style.setProperty("--my", `${y}px`);
           });
-        }).catch((e) => {
-          console.warn("GyroNorm error:", e);
-        });
-      } else {
-        // Comportamento PC (mouse)
-        card.addEventListener("mousemove", (e) => {
-          const rect = card.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          const cx = rect.width / 2;
-          const cy = rect.height / 2;
-          const dx = (x - cx) / cx;
-          const dy = (y - cy) / cy;
 
-          const rotX = dy * 10;
-          const rotY = dx * -10;
-          card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-
-          card.style.setProperty("--mx", `${x}px`);
-          card.style.setProperty("--my", `${y}px`);
-        });
-
-        card.addEventListener("mouseleave", () => {
-          card.style.transform = `rotateX(0deg) rotateY(0deg)`;
-          card.style.setProperty("--mx", `-200px`);
-          card.style.setProperty("--my", `-200px`);
-        });
+          card.addEventListener("mouseleave", () => {
+            card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+            card.style.setProperty("--mx", `-200px`);
+            card.style.setProperty("--my", `-200px`);
+          });
+        }
       }
+
+      cardsData.forEach(createCard);
     </script>
   </body>
 </html>
