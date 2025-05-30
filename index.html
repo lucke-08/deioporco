@@ -1,151 +1,156 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Card 3D con Mouse o Giroscopio</title>
-  <script src="https://cdn.jsdelivr.net/npm/gyronorm@2.0.6/dist/gyronorm.complete.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: url("sfondo.jpg") center/cover no-repeat;
-      perspective: 1000px;
-      overflow: hidden;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Card 3D con Filtri e Player</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: url("sfondo.jpg") center/cover no-repeat;
+        perspective: 1000px;
+        overflow: hidden;
+      }
 
-    .card {
-      position: relative;
-      width: 400px;
-      height: 400px;
-      border-radius: 16px;
-      overflow: hidden;
-      transform-style: preserve-3d;
-      transition: transform 0.2s ease-out;
-    }
+      .card {
+        position: relative;
+        width: 400px;
+        height: 400px;
+        border-radius: 16px;
+        overflow: hidden;
+        transform-style: preserve-3d;
+        transition: transform 0.25s ease-out;
+      }
 
-    .card img.base {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+      .card img.base {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
 
-    .overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 2;
-      mask-image: radial-gradient(
-        circle 150px at var(--mx) var(--my),
-        rgba(0, 0, 0, 1) 0%,
-        rgba(0, 0, 0, 0) 100%
-      );
-      -webkit-mask-image: radial-gradient(
-        circle 150px at var(--mx) var(--my),
-        rgba(0, 0, 0, 1) 0%,
-        rgba(0, 0, 0, 0) 100%
-      );
-    }
+      .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
+        mask-image: radial-gradient(
+          circle 150px at var(--mx) var(--my),
+          rgba(0, 0, 0, 1) 0%,
+          rgba(0, 0, 0, 0) 100%
+        );
+        -webkit-mask-image: radial-gradient(
+          circle 150px at var(--mx) var(--my),
+          rgba(0, 0, 0, 1) 0%,
+          rgba(0, 0, 0, 0) 100%
+        );
+      }
 
-    .overlay.bn {
-      background: url("image.png");
-      opacity: 0.08;
-    }
+      .overlay.bn {
+        background: url("image.png");
+        opacity: 0.08;
+      }
 
-    .overlay.rb {
-      background: repeating-linear-gradient(
-        45deg,
-        red,
-        orange 120px,
-        yellow 180px,
-        green 240px,
-        cyan 300px,
-        blue 360px,
-        magenta 420px
-      );
-      mix-blend-mode: color-dodge;
-      opacity: 0.3;
-      filter: blur(20px);
-      backface-visibility: hidden;
-    }
+      .overlay.rb {
+        background: repeating-linear-gradient(
+          45deg,
+          red,
+          orange 120px,
+          yellow 180px,
+          green 240px,
+          cyan 300px,
+          blue 360px,
+          magenta 420px
+        );
+        mix-blend-mode: color-dodge;
+        opacity: 0.3;
+        filter: blur(20px);
+        backface-visibility: hidden;
+      }
 
-    .overlay.light {
-      background: radial-gradient(
-        circle 120px at var(--mx) var(--my),
-        rgba(255, 255, 255, 0.5) 0%,
-        rgba(255, 255, 255, 0.2) 50%,
-        rgba(255, 255, 255, 0) 100%
-      );
-      z-index: 3;
-      opacity: 0.6;
-    }
-  </style>
-</head>
-<body>
-  <div class="card" id="card">
-    <div class="overlay light"></div>
-    <img src="Screenshot 2025-05-15 234425.png" alt="Card" class="base" />
-    <div class="overlay bn"></div>
-    <div class="overlay rb"></div>
-  </div>
+      .overlay.light {
+        background: radial-gradient(
+          circle 120px at var(--mx) var(--my),
+          rgba(255, 255, 255, 0.5) 0%,
+          rgba(255, 255, 255, 0.2) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        z-index: 3;
+        opacity: 0.6;
+        pointer-events: none;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/gyronorm@2.0.6/dist/gyronorm.complete.min.js"></script>
+  </head>
+  <body>
+    <div class="card" id="card">
+      <div class="overlay light"></div>
+      <img src="luca_sacchini.JPEG" alt="Card" class="base" />
+      <div class="overlay bn"></div>
+      <div class="overlay rb"></div>
+    </div>
 
-  <script>
-    const card = document.getElementById("card");
-    card.style.setProperty("--mx", "-200px");
-    card.style.setProperty("--my", "-200px");
+    <script>
+      const card = document.getElementById("card");
+      card.style.setProperty("--mx", "-200px");
+      card.style.setProperty("--my", "-200px");
 
-    function isMobile() {
-      return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
-    }
+      function isMobile() {
+        return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+      }
 
-    if (isMobile()) {
-      // ➜ Mobile: usa giroscopio
-      const gn = new GyroNorm();
-      gn.init().then(() => {
-        gn.start(data => {
-          const beta = data.do.beta;   // X axis (su-giù)
-          const gamma = data.do.gamma; // Y axis (sinistra-destra)
+      if (isMobile()) {
+        const gn = new GyroNorm();
+        gn.init().then(() => {
+          gn.start((data) => {
+            const { beta, gamma } = data.do;
 
-          const rotX = Math.max(Math.min(beta, 30), -30) / 3;  // limita movimento
-          const rotY = Math.max(Math.min(gamma, 30), -30) / 3;
+            // ROTAZIONE: gamma (Y) ➜ rotY, beta (X) ➜ rotX
+            const rotX = Math.max(Math.min(beta, 45), -45) / 4;
+            const rotY = Math.max(Math.min(gamma, 45), -45) / 4;
+            card.style.transform = `rotateX(${-rotX}deg) rotateY(${rotY}deg)`;
 
-          card.style.transform = `rotateX(${-rotX}deg) rotateY(${rotY}deg)`;
+            // MASCHERA: posizione centrata su rotazione
+            const centerX = 200 + rotY * 2.5;
+            const centerY = 200 + rotX * 2.5;
+            card.style.setProperty("--mx", `${centerX}px`);
+            card.style.setProperty("--my", `${centerY}px`);
+          });
+        }).catch((e) => {
+          console.warn("GyroNorm error:", e);
         });
-      }).catch(err => {
-        console.warn("GyroNorm init failed:", err);
-      });
-    } else {
-      // ➜ Desktop: usa mouse
-      card.addEventListener("mousemove", (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const cx = rect.width / 2;
-        const cy = rect.height / 2;
-        const dx = (x - cx) / cx;
-        const dy = (y - cy) / cy;
+      } else {
+        // Comportamento PC (mouse)
+        card.addEventListener("mousemove", (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const cx = rect.width / 2;
+          const cy = rect.height / 2;
+          const dx = (x - cx) / cx;
+          const dy = (y - cy) / cy;
 
-        const rotX = dy * 10;
-        const rotY = dx * -10;
-        card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+          const rotX = dy * 10;
+          const rotY = dx * -10;
+          card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
 
-        card.style.setProperty("--mx", `${x}px`);
-        card.style.setProperty("--my", `${y}px`);
-      });
+          card.style.setProperty("--mx", `${x}px`);
+          card.style.setProperty("--my", `${y}px`);
+        });
 
-      card.addEventListener("mouseleave", () => {
-        card.style.transform = `rotateX(0deg) rotateY(0deg)`;
-        card.style.setProperty("--mx", `-200px`);
-        card.style.setProperty("--my", `-200px`);
-      });
-    }
-  </script>
-</body>
+        card.addEventListener("mouseleave", () => {
+          card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+          card.style.setProperty("--mx", `-200px`);
+          card.style.setProperty("--my", `-200px`);
+        });
+      }
+    </script>
+  </body>
 </html>
