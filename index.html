@@ -1,52 +1,82 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Demo Gyronorm.js</title>
-  <script src="https://cdn.jsdelivr.net/npm/gyronorm"></script>
+  <title>GyroNorm Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <script src="https://cdn.jsdelivr.net/npm/gyronorm@2.0.6/dist/gyronorm.complete.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 50px;
+      padding: 20px;
+      background: #f4f4f4;
     }
+
     h1 {
-      color: #333;
+      text-align: center;
     }
-    .sensor {
+
+    .reading {
+      background: white;
+      border-radius: 5px;
+      padding: 10px;
       margin: 10px 0;
-      font-size: 1.2em;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    .reading label {
+      display: inline-block;
+      width: 150px;
+      font-weight: bold;
+    }
+
+    #log {
+      color: red;
+      font-size: 0.9em;
     }
   </style>
 </head>
-<body>
-  <h1>Demo Gyronorm.js</h1>
-  <div class="sensor">Alpha (Z): <span id="alpha">--</span></div>
-  <div class="sensor">Beta (X): <span id="beta">--</span></div>
-  <div class="sensor">Gamma (Y): <span id="gamma">--</span></div>
-  <div class="sensor">Acceleration X: <span id="accX">--</span></div>
-  <div class="sensor">Acceleration Y: <span id="accY">--</span></div>
-  <div class="sensor">Acceleration Z: <span id="accZ">--</span></div>
+<body onload="initGyro()">
+
+  <h1>GyroNorm.js Live Demo</h1>
+
+  <div class="reading"><label>Alpha (Z):</label><span id="alpha">-</span></div>
+  <div class="reading"><label>Beta (X):</label><span id="beta">-</span></div>
+  <div class="reading"><label>Gamma (Y):</label><span id="gamma">-</span></div>
+
+  <div class="reading"><label>Acc. X:</label><span id="acc_x">-</span></div>
+  <div class="reading"><label>Acc. Y:</label><span id="acc_y">-</span></div>
+  <div class="reading"><label>Acc. Z:</label><span id="acc_z">-</span></div>
+
+  <p id="log"></p>
 
   <script>
-    const gn = new GyroNorm();
+    let gn;
 
-    gn.init().then(() => {
-      gn.start((data) => {
-        // Orientamento (gradi)
-        document.getElementById('alpha').textContent = data.do.alpha.toFixed(2);
-        document.getElementById('beta').textContent = data.do.beta.toFixed(2);
-        document.getElementById('gamma').textContent = data.do.gamma.toFixed(2);
+    function initGyro() {
+      gn = new GyroNorm();
 
-        // Accelerazione (m/s²)
-        document.getElementById('accX').textContent = data.dm.x.toFixed(2);
-        document.getElementById('accY').textContent = data.dm.y.toFixed(2);
-        document.getElementById('accZ').textContent = data.dm.z.toFixed(2);
+      gn.init({ frequency: 50, logger: consoleLogger }).then(() => {
+        gn.start(data => {
+          // Orientation (in degrees)
+          document.getElementById('alpha').textContent = data.do.alpha.toFixed(2);
+          document.getElementById('beta').textContent = data.do.beta.toFixed(2);
+          document.getElementById('gamma').textContent = data.do.gamma.toFixed(2);
+
+          // Acceleration without gravity
+          document.getElementById('acc_x').textContent = data.dm.x.toFixed(2);
+          document.getElementById('acc_y').textContent = data.dm.y.toFixed(2);
+          document.getElementById('acc_z').textContent = data.dm.z.toFixed(2);
+        });
+      }).catch(err => {
+        document.getElementById('log').textContent = 'Errore durante l\'inizializzazione: ' + err;
       });
-    }).catch((e) => {
-      alert('Gyronorm non è supportato o è stato bloccato dal browser.');
-      console.error(e);
-    });
+    }
+
+    function consoleLogger(message) {
+      console.log('GN:', message);
+    }
   </script>
+
 </body>
 </html>
